@@ -33,76 +33,116 @@ const unsigned int IN1_B = 7;
 const unsigned int IN2_B = 8;
 const unsigned int EN_B = 9;
 
-float kP = 1.;
-float kI = 0.;
-float kD = 0.;
+float kP = 0.12;
+float kI = 0.23;
+float kD = 0.001;
+float dt;
 
 float error = 0;
-float target_vel = -1.0;
+float last_error = 0;
+float rateError = 0;
+float cumError = 0;
+
+float iLim = 0.4;
+
+float target_vel = 0.0;
 
 // Initialize both motors
 L298N A_motor(EN_A, IN1_A, IN2_A);
-Encoder A_encoder(14,15, 0.075, 10);
+Encoder A_encoder(14, 15, 0.075, 10);
 
 //L298NX2 backward_motors(EN_C, IN1_C, IN2_C, EN_D, IN1_D, IN2_D);
 float vel;
-float period = 100;
+float period = 200;
 
 unsigned long my_timer;
+
+
+
+float map(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  x = constrain(x,in_min,in_max);
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 void setup()
 {
     // Used to display information
-    Serial.begin(9600);
+    Serial.begin(115200);
     // Wait for Serial Monitor to be opened
 
     A_motor.forward();
-    my_timer = millis();   // "сбросить" таймер
     A_motor.setSpeed(0);
 
+        my_timer = millis(); // "сбросить" таймер
+
+    A_motor.stop();
+    delay(1000)
 }
 
 void loop()
 {
-    if (Serial.available() > 0) {
-        target_vel =  Serial.parseFloat();
+    if (Serial.available() > 0)
+    {
+        target_vel = Serial.parseFloat();
         Serial.println(target_vel);
     }
     A_encoder.Update();
 
     if ((millis() - my_timer) >= period)
     {
+        dt = (millis() - my_timer)*0.001;
+
         vel = A_encoder.GetVel();
         error = target_vel - vel;
+        rateError = (error-last_error)/dt;
+        last_error = error;        
 
-        float val = error * kP;
+        cumError += error * dt;  
 
-        if (val >= 0.)
+        cumError = constrain(cumError, -iLim,iLim);
+        float output = error * kP + kI * cumError + rateError * kD;
+         
+
+        if (target_vel >= 0.0001)
         {
             A_motor.forward();
         }
         else
         {
+            output = -output;
             A_motor.backward();
-            val = -val;
         }
 
-        Serial.print("error: ");
+
+        // Print info
+        Serial.print(" error: ");
         Serial.print(error);
 
-        Serial.print("   sig: ");
-        Serial.print(val);
+        Serial.print(" cumError: ");
+        Serial.print(cumError);
 
-        Serial.print("   target: ");
+
+        Serial.print(" sig: ");
+        Serial.print(output);
+
+        Serial.print(" target: ");
         Serial.print(target_vel);
 
-        Serial.print("   vel: ");
+        Serial.print(" vel: ");
         Serial.println(vel);
 
-        val = map(val, -255, 255, -1, 1)
-        A_motor.setSpeed((int)val);
+        output = map(output, 0, 1., 0, 255.);
 
-        my_timer = millis();   // "сбросить" таймер
+        if (abs(target_vel) < 0.05)
+        {
+            A_motor.setSpeed(0);
+        }
+        else
+        {
+            A_motor.setSpeed((int)output);
+        }
+        
+        my_timer = millis(); // "сбросить" таймер
     }
-
 }
