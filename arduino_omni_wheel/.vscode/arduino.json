@@ -1,0 +1,6 @@
+{
+    "sketch": "Blink.ino",
+    "port": "COM1",
+    "board": "arduino:avr:mega",
+    "configuration": "cpu=atmega2560"
+}
