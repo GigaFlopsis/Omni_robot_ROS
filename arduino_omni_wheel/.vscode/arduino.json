@@ -1,5 +1,5 @@
 {
-    "sketch": "Blink.ino",
+    "sketch": "arduino_omni_wheel.ino",
     "port": "COM1",
     "board": "arduino:avr:mega",
     "configuration": "cpu=atmega2560"

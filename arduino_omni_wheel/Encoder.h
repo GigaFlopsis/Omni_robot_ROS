@@ -14,6 +14,7 @@
 class Encoder {
 public:
     Encoder(int _outputA, int _outputB, float _radius, int _rate = 10.);
+    void Init();
     void Update();
     float GetVel();
 private:

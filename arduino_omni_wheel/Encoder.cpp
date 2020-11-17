@@ -11,14 +11,20 @@ Encoder::Encoder(int _outputA, int _outputB, float _radius, int _rate = 10.)
     outputA = _outputA;
     outputB = _outputB;
     dt = 1./_rate;
-    pinMode (_outputA,INPUT);
-    pinMode (_outputB,INPUT);
 
-    // Reads the initial state of the outputA
+
+}
+
+void Encoder::Init()
+{
+    pinMode (outputA,INPUT);
+    pinMode (outputB,INPUT);
+        // Reads the initial state of the outputA
     aLastState = digitalRead(outputA);
 
     my_timer = millis();   // "сбросить" таймер
 }
+
 
 void Encoder::Update()
 {
