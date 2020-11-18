@@ -28,6 +28,10 @@ class DCMotor {
         void SetKi(float val);
         void SetKd(float val);
         
+        float kP = 0.12;
+        float kI = 0.3;
+        float kD = 0.01;
+
 
     private:
 
@@ -41,10 +45,7 @@ class DCMotor {
 
         // PID params
 
-        float kP = 0.12;
-        float kI = 0.3;
-        float kD = 0.01;
-
+       
         float iLim = 0.8;
 
         float target_vel = 0.0;

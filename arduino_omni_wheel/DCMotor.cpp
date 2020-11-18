@@ -40,7 +40,6 @@ void DCMotor::Init()
     A_motor.forward();
     A_motor.setSpeed(0);
     A_motor.stop();
-    delay(1000);
     my_timer = millis(); // "сбросить" таймер
 
     A_encoder.Init();
