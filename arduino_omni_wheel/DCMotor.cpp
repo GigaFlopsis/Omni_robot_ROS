@@ -43,7 +43,7 @@ void DCMotor::Init()
     my_timer = millis(); // "сбросить" таймер
 
     A_encoder.Init();
-
+    // delay(1000);
 }
 
 void DCMotor::Update()

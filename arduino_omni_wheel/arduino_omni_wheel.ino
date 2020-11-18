@@ -7,20 +7,20 @@ Source  : https://github.com/AndreaLombardo/L298N/
 #include "DCMotor.h"
 
 
-float frame_rate = 10.;
+float frame_rate = 2.;
 
 
 unsigned long my_timer;
 float time_period;
 
-DCMotor motor_A(4,5,6, 2, 3, 0.075, 10);
-DCMotor motor_B(13,12,11, 10, 9, 0.075, 10);
-DCMotor motor_C(14,15,16, 17, 18, 0.075, 10);
-DCMotor motor_D(22,24,26, 28, 30, 0.075, 10);
+DCMotor motor_A(8,10,9, 32, 34, 0.075, 30); // +
+DCMotor motor_B(2,3,4, 47, 49, 0.075, 30);            //_EN_A, int _IN1_A, int _IN2_A,
+DCMotor motor_C(13,11,12, 28, 30, 0.075, 30); //+
+DCMotor motor_D(7,6,5, 46, 48, 0.075, 30);
 
 
-float a = 0.5;
-float b = 0.5;
+float a = 0.1375;
+float b = 0.265;
 
 float motors_vel[4] = {0., 0., 0., 0.};
 
@@ -31,10 +31,10 @@ char receive_cmd;
 
 void SplitVel(float vX, float vY, float w)
 {
-    motors_vel[0] = vX - vY - a*w - b*w;
-    motors_vel[1] = vX + vY + a*w + b*w;
-    motors_vel[2] = vX + vY - a*w -b*w;
-    motors_vel[3] = vX - vY + a*w + b*w;
+    motors_vel[0] = vX + vY - a*w - b*w;
+    motors_vel[1] = vX - vY + a*w + b*w;
+    motors_vel[2] = vX - vY - a*w -b*w;
+    motors_vel[3] = vX + vY + a*w + b*w;
 }
 
 void SetVel()
@@ -131,7 +131,7 @@ void setup()
 {
     time_period = 1./frame_rate * 1000;
     // Used to display information
-    Serial.begin(230400);
+    Serial.begin(1000000);
     
     motor_A.Init();
     motor_B.Init();
@@ -139,8 +139,8 @@ void setup()
     motor_D.Init();
 
     Serial.println(" init: ");
-
     delay(1000);
+
     my_timer = millis(); // "сбросить" таймер
 }
 
