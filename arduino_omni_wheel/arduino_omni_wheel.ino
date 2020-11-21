@@ -43,9 +43,6 @@ void SetVel()
     for (int i=0; i < 3 ; i++)
     {
         cmd_vel[i] = receive_cmd[i];
-        Serial.print("  :   ");
-        Serial.print(cmd_vel[i]);
-        Serial.println("");
     }
     
     SplitVel(cmd_vel[0], cmd_vel[1], cmd_vel[2]);
@@ -138,13 +135,10 @@ void ParserData()
             msg+=char_array[i];          
             if (char_array[i] == ' ' || char_array[i] == NULL)
             {
-                
                 receive_cmd[k]=msg.toFloat();
-
                 Serial.print(k);
                 Serial.print(": ");
                 Serial.println(receive_cmd[k]);
-
                 k++;
                 msg ="";
                 if (k == 3)

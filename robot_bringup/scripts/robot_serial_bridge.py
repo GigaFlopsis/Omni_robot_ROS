@@ -31,14 +31,13 @@ def callbackCmd(data):
 	global msg, last_msg
 	# if serial_init is False:
 	# 	return
-	scale = 5.
-	msg = "v %s %s %s" %(toFixed(data.linear.x*scale, 2),
-						   toFixed(data.angular.z*scale, 2),
-						   toFixed(data.angular.x*scale*0.5, 2))
+	msg = "v %s %s %s" %(toFixed(data.linear.x, 2),
+						   toFixed(data.linear.y, 2),
+						   toFixed(data.angular.z, 2))
 
 	if last_msg != msg:
 		# print(msg)
-		SendToSerial(bytearray(msg))
+		SendToSerial(msg)
 
 		last_msg = last_msg;
 
@@ -70,20 +69,13 @@ if __name__ == '__main__':
 	rospy.sleep(2.)
 
 	rospy.Subscriber("/cmd_vel", Twist, callbackCmd)
-	rospy.spin()
+	# rospy.spin()
 	while rospy.is_shutdown() is False:
 
-		# for i in numpy.arange(0, 1, 0.02):
-		# 	msg = "v %s %s %s" %(toFixed(i, 2), 0.0, 0.0)
-
-		# print("ok")
-		# for k in numpy.arange(1, 0, -0.02):
-		# 	msg = "v %s %s %s" %(toFixed(k, 2), 0.0, 0.0)
-		# 	print(msg)
-		# 	SendToSerial(msg)
-		# reading = ser.readline().decode()
-		# print(reading)
-		rate.sleep()
+		reading = ser.readline().decode()
+		if reading:
+			print(reading)
+		# rate.sleep()
 
 	print("Exit")
 	ser.close()

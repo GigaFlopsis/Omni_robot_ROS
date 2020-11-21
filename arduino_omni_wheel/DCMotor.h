@@ -8,7 +8,7 @@
 
 #include "Arduino.h"
 #include <L298NX2.h>
-#include "Encoder.h"
+#include "MyEncoder.h"
 
 
 class DCMotor {
@@ -66,7 +66,7 @@ class DCMotor {
 
        // Initialize motor and encoder
         L298N A_motor;
-        Encoder A_encoder;
+        MyEncoder A_encoder;
 
         float vel;
         float period;
