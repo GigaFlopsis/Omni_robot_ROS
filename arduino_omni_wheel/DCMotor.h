@@ -28,8 +28,8 @@ class DCMotor {
         void SetKi(float val);
         void SetKd(float val);
         
-        float kP = 0.15;
-        float kI = 0.5;
+        float kP = 0.5;
+        float kI = 0.4;
         float kD = 0.00;
 
 
