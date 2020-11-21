@@ -5,17 +5,21 @@ Source  : https://github.com/AndreaLombardo/L298N/
 */
 
 #include "DCMotor.h"
+#include <ros.h>
+#include <geometry_msgs/Twist.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float32.h>
+
+ros::NodeHandle  nh;
 
 float frame_rate = 2.;
-
-
 unsigned long my_timer;
 float time_period;
 
-DCMotor motor_A(8,10,9, 32, 34, 0.075, 10); // +
-DCMotor motor_B(2,3,4, 47, 49, 0.075, 10);            //_EN_A, int _IN1_A, int _IN2_A,
-DCMotor motor_C(13,11,12, 28, 30, 0.075, 10); //+
-DCMotor motor_D(7,6,5, 46, 48, 0.075, 10);
+DCMotor motor_A(1,2,3, 4, 5, 0.075, 10); // +
+DCMotor motor_B(6,7,8, 9, 10, 0.075, 10);            //_EN_A, int _IN1_A, int _IN2_A,
+DCMotor motor_C(13,12,11,14, 15, 0.075, 10); //+
+DCMotor motor_D(15,16,17, 18, 19, 0.075, 10);
 
 
 char char_array[100];
@@ -25,10 +29,10 @@ float a = 0.1375;
 float b = 0.265;
 
 float motors_vel[4] = {0., 0., 0., 0.};
-
 float cmd_vel[3] = {0., 0., 0.};
-
 float receive_cmd[3] = {0.,0.,0.,};
+
+
 
 void SplitVel(float vX, float vY, float w)
 {
@@ -124,8 +128,6 @@ void PrintPID()
         Serial.println(motor_A.kD);
 }
 
-
-
 void ParserData()
 {
     int k = 0;
@@ -150,8 +152,6 @@ void ParserData()
     // Serial.println(k);
 }
 
-
-
 void ClearArray()
 {
         for(int i=0; i < sizeof(char_array); i++)
@@ -161,71 +161,100 @@ void ClearArray()
 
 }
 
-void setup()
+// ROS Node
+std_msgs::Float32MultiArray motors_target_float_msg;
+ros::Publisher motors_target_pub("motors/target", &motors_target_float_msg);
+
+void CmdVelClb( const geometry_msgs::Twist& msgs)
 {
-
+    SplitVel(msgs.linear.x,msgs.linear.y,msgs.angular.z);
     
-    time_period = 1./frame_rate * 1000;
-    // Used to display information
-    Serial.begin(1000000);
-    Serial.setTimeout(100);
+    motor_A.SetVal(motors_vel[0]);
+    motor_B.SetVal(motors_vel[1]);
+    motor_C.SetVal(motors_vel[2]);
+    motor_D.SetVal(motors_vel[3]);
 
+    for(int i;i < 4;i++)
+    {
+        motors_target_float_msg.data[i] = motors_vel[i]; 
+    }
+    motors_target_pub.publish(&motors_target_float_msg);   
+}
+
+ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", CmdVelClb);
+
+
+void setup()
+{    
+    // init ros msgs
+    motors_target_float_msg.data_length = 4;
+    motors_target_float_msg.data = (float*)malloc(sizeof(float) * 4);
+
+    time_period = 1./frame_rate * 1000;
     motor_A.Init();
     motor_B.Init();
     motor_C.Init();
     motor_D.Init();
-
+    
     delay(1000);
     my_timer = millis(); // "сбросить" таймер
+    
+    // ros init
+    nh.initNode();
+    nh.advertise(motors_target_pub);
+
+    nh.subscribe(sub);
+    
 }
 
 
 void loop()
 {
     
-    while (Serial.available() >0 )
-    {
-        availableBytes = Serial.available();
-        for(int i=0; Serial.available() > 0; i++)
-        {
-            char_array[i] = Serial.read();
-            delay(1);
-        }
-        // Serial.println(char_array);
+    // while (Serial.available() >0 )
+    // {
+    //     availableBytes = Serial.available();
+    //     for(int i=0; Serial.available() > 0; i++)
+    //     {
+    //         char_array[i] = Serial.read();
+    //         delay(1);
+    //     }
+    //     // Serial.println(char_array);
             
-        if (char_array[0] == 'v')
-        {
-            Serial.println("Set vel\t");
-            ParserData();
-            SetVel();
-        }
+    //     if (char_array[0] == 'v')
+    //     {
+    //         Serial.println("Set vel\t");
+    //         ParserData();
+    //         SetVel();
+    //     }
 
-        // Print PID info
-        if (char_array[0] == 'i')
-        {
-            PrintPID();
-        }
+    //     // Print PID info
+    //     if (char_array[0] == 'i')
+    //     {
+    //         PrintPID();
+    //     }
 
-        // Set PID info
-        if (char_array[0] == 'p')
-        {
-            Serial.println("Set PID\t");
-            ParserData();
-            SetPID();
-            PrintPID();
-        }
-        ClearArray();
-    }
+    //     // Set PID info
+    //     if (char_array[0] == 'p')
+    //     {
+    //         Serial.println("Set PID\t");
+    //         ParserData();
+    //         SetPID();
+    //         PrintPID();
+    //     }
+    //     ClearArray();
+    // }
 
-    // Update controls
+      
+    // // Update controls
     motor_A.Update();
     motor_B.Update();
     motor_C.Update();
     motor_D.Update();
-        
-    if((millis() - my_timer) >= time_period)
-    {
-        PrintInfo();
-        my_timer = millis(); // "reset timer
-    }
+    // if((millis() - my_timer) >= time_period)
+    // {
+    //     // PrintInfo();
+    //     my_timer = millis(); // "reset timer
+    // }
+    nh.spinOnce();
 }
