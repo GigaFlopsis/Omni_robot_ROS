@@ -12,7 +12,7 @@ Source  : https://github.com/AndreaLombardo/L298N/
 
 ros::NodeHandle  nh;
 
-float frame_rate = 2.;
+float frame_rate = 10.;
 unsigned long my_timer;
 float time_period;
 
@@ -162,8 +162,14 @@ void ClearArray()
 }
 
 // ROS Node
+
 std_msgs::Float32MultiArray motors_target_float_msg;
+std_msgs::Float32MultiArray current_vel_float_msg;
+geometry_msgs::Twist current_robot_vel_msg;
+
 ros::Publisher motors_target_pub("motors/target", &motors_target_float_msg);
+ros::Publisher motors_current_pub("motors/current", &current_vel_float_msg);
+ros::Publisher robot_vel_pub("robot/velosity", &current_robot_vel_msg);
 
 void CmdVelClb( const geometry_msgs::Twist& msgs)
 {
@@ -181,6 +187,27 @@ void CmdVelClb( const geometry_msgs::Twist& msgs)
     motors_target_pub.publish(&motors_target_float_msg);   
 }
 
+void PublishMotorsVel()
+{
+    // Publish current velocity for each motor
+    current_vel_float_msg.data[0] = motor_A.GetVel();
+    current_vel_float_msg.data[1] = motor_B.GetVel();
+    current_vel_float_msg.data[2] = motor_C.GetVel();
+    current_vel_float_msg.data[3] = motor_D.GetVel();
+
+    motors_current_pub.publish(&current_vel_float_msg);
+}
+
+void PublishRobotVel()
+{
+    // Publish current velocity for each motor
+    current_robot_vel_msg.linear.x = 1.0;
+    current_robot_vel_msg.linear.y = 2.0;
+    current_robot_vel_msg.angular.z = 3.0;
+
+    robot_vel_pub.publish(&current_robot_vel_msg);
+}
+
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", CmdVelClb);
 
 
@@ -189,6 +216,9 @@ void setup()
     // init ros msgs
     motors_target_float_msg.data_length = 4;
     motors_target_float_msg.data = (float*)malloc(sizeof(float) * 4);
+
+    current_vel_float_msg.data_length = 4;
+    current_vel_float_msg.data = (float*)malloc(sizeof(float) * 4);
 
     time_period = 1./frame_rate * 1000;
     motor_A.Init();
@@ -202,7 +232,9 @@ void setup()
     // ros init
     nh.initNode();
     nh.advertise(motors_target_pub);
-
+    nh.advertise(motors_current_pub);
+    nh.advertise(robot_vel_pub);
+    
     nh.subscribe(sub);
     
 }
@@ -210,51 +242,19 @@ void setup()
 
 void loop()
 {
-    
-    // while (Serial.available() >0 )
-    // {
-    //     availableBytes = Serial.available();
-    //     for(int i=0; Serial.available() > 0; i++)
-    //     {
-    //         char_array[i] = Serial.read();
-    //         delay(1);
-    //     }
-    //     // Serial.println(char_array);
-            
-    //     if (char_array[0] == 'v')
-    //     {
-    //         Serial.println("Set vel\t");
-    //         ParserData();
-    //         SetVel();
-    //     }
-
-    //     // Print PID info
-    //     if (char_array[0] == 'i')
-    //     {
-    //         PrintPID();
-    //     }
-
-    //     // Set PID info
-    //     if (char_array[0] == 'p')
-    //     {
-    //         Serial.println("Set PID\t");
-    //         ParserData();
-    //         SetPID();
-    //         PrintPID();
-    //     }
-    //     ClearArray();
-    // }
-
-      
+     
     // // Update controls
     motor_A.Update();
     motor_B.Update();
     motor_C.Update();
     motor_D.Update();
-    // if((millis() - my_timer) >= time_period)
-    // {
-    //     // PrintInfo();
-    //     my_timer = millis(); // "reset timer
-    // }
+
+    if((millis() - my_timer) >= time_period)
+    {
+        // PrintInfo();
+        PublishMotorsVel();
+        PublishRobotVel();
+        my_timer = millis(); // "reset timer
+    }
     nh.spinOnce();
 }
