@@ -14,12 +14,14 @@ ros::NodeHandle  nh;
 
 float frame_rate = 10.;
 unsigned long my_timer;
+unsigned long my_timer_2;
+
 float time_period;
 
-DCMotor motor_A(1,2,3, 4, 5, 0.075, 10); // +
-DCMotor motor_B(6,7,8, 9, 10, 0.075, 10);            //_EN_A, int _IN1_A, int _IN2_A,
-DCMotor motor_C(13,12,11,14, 15, 0.075, 10); //+
-DCMotor motor_D(15,16,17, 18, 19, 0.075, 10);
+DCMotor motor_A(3,23,22, 14, 15, 0.075, 10); // +
+DCMotor motor_B(4,20,21, 9, 10, 0.075, 10);            //_EN_A, int _IN1_A, int _IN2_A,
+DCMotor motor_C(5,19,18,16, 17, 0.075, 10); //+
+DCMotor motor_D(6,1,2, 12, 11, 0.075, 10);
 
 
 char char_array[100];
@@ -40,21 +42,6 @@ void SplitVel(float vX, float vY, float w)
     motors_vel[1] = vX - vY + a*w + b*w;
     motors_vel[2] = vX - vY - a*w -b*w;
     motors_vel[3] = vX + vY + a*w + b*w;
-}
-
-void SetVel()
-{
-    for (int i=0; i < 3 ; i++)
-    {
-        cmd_vel[i] = receive_cmd[i];
-    }
-    
-    SplitVel(cmd_vel[0], cmd_vel[1], cmd_vel[2]);
-    
-    motor_A.SetVal(motors_vel[0]);
-    motor_B.SetVal(motors_vel[1]);
-    motor_C.SetVal(motors_vel[2]);
-    motor_D.SetVal(motors_vel[3]);
 }
 
 void SetPID()
@@ -185,6 +172,44 @@ void CmdVelClb( const geometry_msgs::Twist& msgs)
         motors_target_float_msg.data[i] = motors_vel[i]; 
     }
     motors_target_pub.publish(&motors_target_float_msg);   
+
+    my_timer_2 = millis(); // "reset timer
+}
+
+
+void SetVel(bool set_zero = false)
+{
+    if (set_zero)
+    {
+        for (int i=0; i < 3 ; i++)
+        {
+            cmd_vel[i] = 0;
+        }
+    }
+
+    else
+    {
+         for (int i=0; i < 3 ; i++)
+        {
+            cmd_vel[i] = receive_cmd[i];
+        }
+    }
+
+   
+    
+    SplitVel(cmd_vel[0], cmd_vel[1], cmd_vel[2]);
+    
+    motor_A.SetVal(motors_vel[0]);
+    motor_B.SetVal(motors_vel[1]);
+    motor_C.SetVal(motors_vel[2]);
+    motor_D.SetVal(motors_vel[3]);
+
+
+    for(int i;i < 4;i++)
+    {
+        motors_target_float_msg.data[i] = motors_vel[i]; 
+    }
+    motors_target_pub.publish(&motors_target_float_msg);   
 }
 
 void PublishMotorsVel()
@@ -228,7 +253,7 @@ void setup()
     
     delay(1000);
     my_timer = millis(); // "сбросить" таймер
-    
+    my_timer_2 =  millis();
     // ros init
     nh.initNode();
     nh.advertise(motors_target_pub);
@@ -255,6 +280,11 @@ void loop()
         PublishMotorsVel();
         PublishRobotVel();
         my_timer = millis(); // "reset timer
+    }
+    if((millis() - my_timer_2) >= 1000)
+    {
+        // PrintInfo();
+        SetVel(true);       //publish zero
     }
     nh.spinOnce();
 }
