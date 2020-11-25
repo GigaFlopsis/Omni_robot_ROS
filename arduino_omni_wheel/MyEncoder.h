@@ -9,7 +9,7 @@
 
 #define PI 3.14159265359
 #define PI_2 6.28318530718
-#define RAD_CICLE 0.008181230869
+#define RAD_CICLE 0.00204530772
 
 
 class MyEncoder {
