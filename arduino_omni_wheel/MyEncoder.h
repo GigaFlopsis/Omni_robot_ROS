@@ -7,8 +7,6 @@
 #include "Arduino.h"
 #include <Encoder.h>
 
-#define PI 3.14159265359
-#define PI_2 6.28318530718
 #define RAD_CICLE 0.00204530772
 
 
@@ -28,9 +26,6 @@ private:
     float period = 0;
     long counter_period = 0;
     
-    int aState;
-    int aLastState;
-    float path;
     unsigned long my_timer;
     float dt;
 };

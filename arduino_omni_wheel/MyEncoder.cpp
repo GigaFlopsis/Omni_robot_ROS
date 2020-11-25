@@ -25,15 +25,6 @@ void MyEncoder::Update()
         counter_period = Enc.read();
         velocity = radius * (counter_period * RAD_CICLE) / dt;
 
-        //        path = radius*(counter*RAD_CICLE);
-        //        Serial.print("Position: ");
-        //        Serial.print(counter);
-        //
-        //        Serial.print("   path: ");
-        //        Serial.print(path);
-        //        Serial.print("   vel: ");
-        //        Serial.println(velocity);
-
         my_timer = millis();
         counter_period = 0;
         Enc.write(0);
