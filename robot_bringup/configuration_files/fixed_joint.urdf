@@ -1,0 +1,42 @@
+<robot name="drone_fixed_joint">
+
+  
+
+<!--
+  <link name="odom" />
+  <link name="t265_odom_frame" />
+
+ <joint name="robot_odom_joint_link" type="revolute">
+    <parent link="odom"/>
+    <child link="t265_odom_frame"/>
+    <origin xyz="0.0 0.0 0.245" rpy="0.0 0.0 0.0"/> 
+  </joint>
+-->
+
+  <link name="base_link" />  
+  <link name="t265_link" />
+
+    <joint name="t265_joint_link" type="fixed">
+    <parent link="t265_link"/>
+    <child link="base_link"/>
+    <origin xyz="-0.245 0.0 0.18 " rpy="0.0 1.57 0.0"/> 
+  </joint>
+
+<!--
+<link name="d400_link" />  
+  	<joint name="d400_joint_link" type="fixed">
+    <parent link="t265_link"/>
+    <child link="d400_link"/>
+    <origin xyz="0.12 0 0.0" rpy="0 0.0 0.0"/> 
+  </joint>
+-->
+
+
+<!-- 
+90 ged: 1.5708
+45 deg: 0,785398
+-->
+
+
+</robot>
+

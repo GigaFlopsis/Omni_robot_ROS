@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- laod prams from environment variables -->
+    <param name="robot_description" textfile="$(find robot_bringup)/configuration_files/fixed_joint.urdf" />
+	<node pkg="robot_state_publisher" name="drone_fixed_joints_pub" type="robot_state_publisher" output="screen" respawn="true">
+		<param name="publish_frequency" value="100.0"/>
+	</node>
+
+
+	<node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom 100" />
+
+	<node pkg="tf" type="static_transform_publisher" name="odom_link" args="0 0 0.245 0 0 0 odom t265_odom_frame 100" />
+
+
+	<node pkg="tf" type="static_transform_publisher" name="d435_link" args="0.08 0 -0.075 0 1.25 0 t265_link d400_link 100" />
+
+	<!--Run realsense t265-->
+          <include file="$(find robot_bringup)/launch/camera/rs_t265.launch"/>
+
+
+	<!-- Exploratioon -->
+	<!--
+	<include file="$(find drone_bringup)/launch/exploration_1.launch"/>
+	-->
+	<node pkg="robot_bringup" type="tf_to_posestamped.py" name="tf_to_odom_node" respawn="true">
+		<param name="roll_offset" value="0." />
+		<param name="pitch_offset" value="1.5708" />
+		<param name="yaw_offset" value="0." />
+	</node>
+
+
+	<!--Run realsense d435-->
+          <include file="$(find robot_bringup)/launch/camera/rs_d435.launch"/>
+</launch>

@@ -3,29 +3,33 @@ Author  : Dmitry Devitt
 Source  : https://github.com/AndreaLombardo/L298N/
 
 */
+#define REG_RATE 30.0
 
 #include "DCMotor.h"
-#include <ros.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/Point.h>
-#include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/Float32.h>
+#include "ros.h"
+#include "geometry_msgs/Twist.h"
+#include "geometry_msgs/Point.h"
+#include "std_msgs/Float32MultiArray.h"
+#include "std_msgs/Float32.h"
 #include <EEPROM.h>
+
+
 
 ros::NodeHandle  nh;
 
 float frame_rate = 10.;
+
 unsigned long main_timer;
 unsigned long safety_timer;
 unsigned long publish_timer;
-
+unsigned long current_time;
 
 float time_period;
 
-DCMotor motor_A(3,23,22, 14, 15, 0.075, 10); // +
-DCMotor motor_B(4,20,21, 9, 10, 0.075, 10);            //_EN_A, int _IN1_A, int _IN2_A,
-DCMotor motor_C(5,19,18,16, 17, 0.075, 10); //+
-DCMotor motor_D(6,1,2, 12, 11, 0.075, 10);
+DCMotor motor_A(3,23,22, 14, 15, 0.075, REG_RATE); // +
+DCMotor motor_B(4,20,21, 9, 10, 0.075, REG_RATE);            //_EN_A, int _IN1_A, int _IN2_A,
+DCMotor motor_C(5,19,18,16, 17, 0.075, REG_RATE); //+
+DCMotor motor_D(6,1,2, 12, 11, 0.075, REG_RATE);
 
 
 
@@ -42,9 +46,9 @@ float receive_cmd[3] = {0.,0.,0.,};
 
 void SplitVel(float vX, float vY, float w)
 {
-    motors_vel[0] = vX + vY - a*w - b*w;
+    motors_vel[0] = vX - vY - a*w - b*w;
     motors_vel[1] = vX - vY + a*w + b*w;
-    motors_vel[2] = vX - vY - a*w -b*w;
+    motors_vel[2] = vX + vY - a*w -b*w;
     motors_vel[3] = vX + vY + a*w + b*w;
 }
 
@@ -128,9 +132,13 @@ void PublishRobotVel()
 {
         // Publish current velocity of robot
 
-    current_robot_vel_msg.linear.x = (motor_A.GetVel()-motor_B.GetVel()-motor_C.GetVel()+motor_D.GetVel())*-1./4;
-    current_robot_vel_msg.linear.y = (motor_A.GetVel()+motor_B.GetVel()+motor_C.GetVel()+motor_D.GetVel())/4.;
-    current_robot_vel_msg.angular.z = ((tang_dev_ab*motor_A.GetVel())-(tang_dev_ab*motor_B.GetVel())+(tang_dev_ab*motor_C.GetVel())-(tang_dev_ab*motor_D.GetVel()))/4.;
+    current_robot_vel_msg.linear.x = (motor_A.GetVel()+motor_B.GetVel()+motor_C.GetVel()+motor_D.GetVel())/4.;
+    current_robot_vel_msg.linear.y = (-motor_A.GetVel()
+                                      + motor_B.GetVel()
+                                      - motor_C.GetVel()
+                                      + motor_D.GetVel())/4.;
+
+    current_robot_vel_msg.angular.z = ((tang_dev_ab*motor_A.GetVel())-(tang_dev_ab*motor_B.GetVel())+(tang_dev_ab*motor_C.GetVel())-(tang_dev_ab*motor_D.GetVel()))/-4.;
     
     robot_vel_pub.publish(&current_robot_vel_msg);
 }
@@ -169,6 +177,29 @@ void PIDconfigClb(const geometry_msgs::Point& data)
     UpdateDataFromStorage(data.x, data.y,data.z);
 }
 
+void PIDconfigClb(float p, float i, float d)
+{
+    // ros subscribeer for set  PID params
+    float val = p;
+        motor_A.kP = val;
+        motor_B.kP = val;
+        motor_C.kP = val;
+        motor_D.kP = val;
+    val = i;
+        motor_A.kI = val;
+        motor_B.kI = val;
+        motor_C.kI = val;
+        motor_D.kI = val; 
+    val = d;
+        motor_A.kD = val;
+        motor_B.kD = val;
+        motor_C.kD = val;
+        motor_D.kD = val;
+
+    PublishPIDs();
+
+    // UpdateDataFromStorage(data.x, data.y,data.z);
+}
 
 ros::Subscriber<geometry_msgs::Twist> cmd_vel_sub("/cmd_vel", CmdVelClb);
 ros::Subscriber<geometry_msgs::Point> pid_sub("/motors/pid/set", PIDconfigClb);
@@ -195,17 +226,13 @@ void RestoreDataFromStorage()
   eeAddress += sizeof(float); //Move address to the next byte after float 'f'.
   EEPROM.get( eeAddress, d );
   
-  if (p < 0.000001 && i < 0.000001 && d < 0.000001)
+  if (p < 0.0001 && i < 0.0001 && d < 0.0001)
     {
         // if data is empty, return
         return;
     }
 
-    pid_config_msg.x = p;
-    pid_config_msg.y = i;
-    pid_config_msg.z = d;
-
-    PIDconfigClb(pid_config_msg);
+    PIDconfigClb(p,i,d);
 
 }
 
@@ -266,8 +293,9 @@ void loop()
     motor_B.Update();
     motor_C.Update();
     motor_D.Update();
-
-    if((millis() - main_timer) >= time_period)
+    current_time = millis(); 
+    
+    if((current_time - main_timer) >= time_period)
     {
         // PrintInfo();
         PublishMotorsVel();
@@ -276,7 +304,7 @@ void loop()
     }
 
     // publish data every 1 sec
-    if((millis() - publish_timer) >= 1000)
+    if((current_time - publish_timer) >= 1000)
     {
         PublishPIDs();
         publish_timer = millis(); // "reset timer
@@ -285,7 +313,7 @@ void loop()
 
 
     // safety stop after loose control to 1 sec
-    if((millis() - safety_timer) >= 1000)
+    if((current_time - safety_timer) >= 1000)
     {
         // PrintInfo();
         SetVel(true);       //publish zero

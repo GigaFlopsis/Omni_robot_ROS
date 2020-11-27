@@ -76,7 +76,7 @@ void DCMotor::Update()
         }
 
         output = map(output, 0, 1., 0, 255.);
-        if (abs(target_vel) < 0.05)
+        if (abs(target_vel) < 0.1)
         {
             A_motor.setSpeed(0);
         }

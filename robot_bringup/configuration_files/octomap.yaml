@@ -1,0 +1,49 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  compress_map: true
+  filter_ground: false
+  filter_speckles: false
+  ground_filter_angle: 0.15
+  ground_filter_distance: 0.04
+  ground_filter_plane_distance: 0.07
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      compress_map: true
+      filter_ground: false
+      filter_speckles: false
+      ground_filter_angle: 0.15
+      ground_filter_distance: 0.04
+      ground_filter_plane_distance: 0.07
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      incremental_2D_projection: false
+      max_depth: 16
+      name: Default
+      occupancy_max_z: 100.0
+      occupancy_min_z: -100.0
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      pointcloud_max_z: 100.0
+      pointcloud_min_z: 0.3
+      sensor_model_hit: 0.65
+      sensor_model_max: 0.97
+      sensor_model_max_range: 3.5
+      sensor_model_min: 0.12
+      sensor_model_miss: 0.4
+      state: true
+      type: ''
+    state: []
+  incremental_2D_projection: false
+  max_depth: 16
+  occupancy_max_z: 100.0
+  occupancy_min_z: 0.3
+  pointcloud_max_z: 100.0
+  pointcloud_min_z: 0.3
+  sensor_model_hit: 0.7
+  sensor_model_max: 0.97
+  sensor_model_max_range: 3.5
+  sensor_model_min: 0.12
+  sensor_model_miss: 0.4
+state: []
