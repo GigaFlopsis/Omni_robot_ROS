@@ -10,11 +10,11 @@ from geometry_msgs.msg import PoseStamped, Point, Twist, TwistStamped
 from geometry_tools import *
 
 #PID conf
-vel_kP = 0.8
-vel_kD = 0.1
-vel_limit = 0.7
+vel_kP = 0.7
+vel_kD = 0.01
+vel_limit = 0.8
 
-rot_kP = 0.8
+rot_kP = 0.5
 rot_kD = 0.1
 rot_limit = 0.7
 
@@ -134,13 +134,12 @@ if __name__ == '__main__':
 
 		rot_vec = rotate_point2d(-current_course, reg_hor_vec)
 
-		cmd_msg.linear.x = rot_vec[0]
-		cmd_msg.linear.y = rot_vec[1]
-		cmd_msg.angular.z = reg_rot
+		cmd_msg.linear.x = limit(rot_vec[0], -vel_limit,vel_limit)
+		cmd_msg.linear.y = limit(rot_vec[1], -vel_limit,vel_limit)
+		cmd_msg.angular.z = limit(reg_rot, -rot_limit, rot_limit)
 
 
 		cmd_pub.publish(cmd_msg)
-		print(cmd_msg)
 
 		last_error_pose = error_pose
 		last_error_course = error_course

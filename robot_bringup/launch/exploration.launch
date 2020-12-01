@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <launch>
     <arg name="mav_name" default="iris"/>
-    <arg name="waypoint_z" default="1.8" />
+    <arg name="waypoint_z" default="0.3" />
     <arg name="rviz" default="false"/>
     <arg name="rosbag" default="false"/>
     <arg name="param_file" default="$(find robot_bringup)/configuration_files/nbv_task1.yaml" />
-    <arg name="tf_frame" default="map" />
+    <arg name="tf_frame" default="odom" />
     <arg name="pcl_topic" default= "/d400/depth/color/points" />
     <arg name="pose_cov" default="/mavros/local_position/pose_cov"/>
     <arg name="odom" default="/robot/odom" />
@@ -18,8 +18,8 @@
     <arg name="shift_initial_z" default="-0.25"/>
     <arg name="namespace_voxblox" default="lowres/"/>
     <arg name="method" default="fast" />
-    <arg name="voxel_size" default="0.05" />
-    <arg name="lowres_voxel_size" default="0.6"/>
+    <arg name="voxel_size" default="0.1" />
+    <arg name="lowres_voxel_size" default="0.4"/>
     <arg name="position_controller" default="/goal"/>
     <arg name="color_mode" default="color"/>
 
