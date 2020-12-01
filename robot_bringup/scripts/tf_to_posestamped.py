@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
 
 	base_link = "base_link"
-	map_link = "map"
+	map_link = "odom"
 
 	base_link = rospy.get_param("~base_link", base_link)
 	map_link = rospy.get_param("~map_link", map_link)

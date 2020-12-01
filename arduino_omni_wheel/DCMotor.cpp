@@ -75,13 +75,13 @@ void DCMotor::Update()
             A_motor.backward();
         }
 
-        output = map(output, 0, 1., 0, 255.);
         if (abs(target_vel) < 0.1)
         {
             A_motor.setSpeed(0);
         }
         else
         {
+            output = map(output, 0, 1., 50, 255.);
             A_motor.setSpeed((int)output);
         }
         
