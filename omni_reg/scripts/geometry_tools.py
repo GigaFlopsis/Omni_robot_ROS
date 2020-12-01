@@ -72,7 +72,7 @@ def rotate_point2d(rot,xy_point):
     pos = np.array([[xy_point[0]], [xy_point[1]]])
     val = np.dot(rotate,pos)
 
-    return (val[0][0], val[1][0], 0.0)
+    return np.array([val[0][0], val[1][0], 0.0])
 
 
 def normalize_angle(ang):
@@ -81,9 +81,9 @@ def normalize_angle(ang):
     :param ang:
     :return:
     """
-    while ang > math.pi:
+    if ang > math.pi:
         ang -= 2.0 * math.pi
-    while ang < -math.pi:
+    elif ang < -math.pi:
         ang += 2.0 * math.pi
     return ang
 
