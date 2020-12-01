@@ -7,9 +7,8 @@
 		<param name="publish_frequency" value="100.0"/>
 	</node>
 
-<!--
 	<node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom 100" />
--->
+
 	<node pkg="tf" type="static_transform_publisher" name="odom_link" args="0 0 0.245 0 0 0 odom t265_odom_frame 100" />
 
 
@@ -29,13 +28,13 @@
 		<param name="yaw_offset" value="0." />
 	</node>
 
+ <node pkg="omni_reg" type="reg.py" name="omni_reg_node" /> 
 
 	<!--Run realsense d435-->
 
           <include file="$(find robot_bringup)/launch/camera/rs_d435.launch"/>
-
-	<!-- pc2 to laserscan-->
-   
+  
+<!--
        <include file="$(find robot_bringup)/launch/pc2toLaser.launch"/>
-
+-->
 </launch>
